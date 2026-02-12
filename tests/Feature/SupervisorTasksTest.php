@@ -57,7 +57,20 @@ class SupervisorTasksTest extends TestCase
 
         $response = $this->get(route('supervisor.tasks'));
         $response->assertOk();
-        $response->assertSee('Kelola Tugas Staf');
+        $response->assertSee('Manage Staff Tasks');
+    }
+
+    public function test_user_with_direct_permission_can_see_manage_staff_tasks_menu_in_sidebar(): void
+    {
+        $permissionOnlyUser = User::factory()->create(['email' => 'sidebar-perm@test.com']);
+        $permissionOnlyUser->givePermissionTo('tasks.manage.staff');
+
+        $this->actingAs($permissionOnlyUser);
+
+        $response = $this->get(route('dashboard'));
+        $response->assertOk();
+        $response->assertSee(route('supervisor.tasks'));
+        $response->assertSee('Manage Staff Tasks');
     }
 
     public function test_supervisor_task_manager_component_redirects_without_permission(): void
@@ -150,5 +163,25 @@ class SupervisorTasksTest extends TestCase
         $ids = array_column($tasks, 'id');
         $this->assertContains($taskWithStaff->id, $ids);
         $this->assertNotContains($taskAlone->id, $ids);
+    }
+
+    public function test_supervisor_can_assign_task_to_user_with_direct_permission_without_staff_role(): void
+    {
+        $this->actingAs($this->supervisor);
+
+        $permissionOnlyUser = User::factory()->create(['email' => 'perm-only@test.com']);
+        $permissionOnlyUser->givePermissionTo('tasks.update-status');
+
+        Volt::test('supervisor-task-manager')
+            ->call('openCreate')
+            ->set('title', 'Task For Permission User')
+            ->set('description', 'Assigned to a user without staff role')
+            ->set('status', 'todo')
+            ->set('assignees', [$permissionOnlyUser->id])
+            ->call('saveTask')
+            ->assertHasNoErrors();
+
+        $task = Task::query()->where('title', 'Task For Permission User')->firstOrFail();
+        $this->assertTrue($task->assignees->contains($permissionOnlyUser));
     }
 }

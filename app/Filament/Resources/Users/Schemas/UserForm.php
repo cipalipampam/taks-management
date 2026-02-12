@@ -41,6 +41,15 @@ class UserForm
                     ->label('Roles (staff & supervisor)')
                     ->helperText('User dapat memiliki lebih dari satu role (misal staff sekaligus supervisor).')
                     ->dehydrated(true),
+
+                Select::make('permissions')
+                    ->relationship('permissions', 'name')
+                    ->multiple()
+                    ->preload()
+                    ->searchable()
+                    ->label('Permission tambahan')
+                    ->helperText('Permission ini ditambahkan langsung ke user tanpa mengubah role.')
+                    ->dehydrated(true),
             ]);
     }
 }

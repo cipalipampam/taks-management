@@ -23,11 +23,11 @@
                     <flux:sidebar.item icon="clipboard-document-list" :href="route('your-tasks')" :current="request()->routeIs('your-tasks')" wire:navigate>
                         {{ __('My Tasks') }}
                     </flux:sidebar.item>
-                    @hasanyrole('supervisor|admin')
+                    @can('tasks.manage.staff')
                         <flux:sidebar.item icon="rectangle-stack" :href="route('supervisor.tasks')" :current="request()->routeIs('supervisor.tasks')" wire:navigate>
                             {{ __('Manage Staff Tasks') }}
                         </flux:sidebar.item>
-                    @endhasanyrole
+                    @endcan
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

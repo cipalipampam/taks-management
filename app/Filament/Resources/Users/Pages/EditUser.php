@@ -20,8 +20,9 @@ class EditUser extends EditRecord
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $record = $this->getRecord();
-        $record->load('roles');
+        $record->load('roles', 'permissions');
         $data['roles'] = $record->roles->pluck('id')->map(fn ($id) => (string) $id)->values()->all();
+        $data['permissions'] = $record->permissions->pluck('id')->map(fn ($id) => (string) $id)->values()->all();
 
         return $data;
     }
@@ -32,5 +33,9 @@ class EditUser extends EditRecord
         $roles = $state['roles'] ?? [];
         $roleIds = array_filter(array_map('intval', (array) $roles));
         $this->record->syncRoles($roleIds);
+
+        $permissions = $state['permissions'] ?? [];
+        $permissionIds = array_filter(array_map('intval', (array) $permissions));
+        $this->record->syncPermissions($permissionIds);
     }
 }

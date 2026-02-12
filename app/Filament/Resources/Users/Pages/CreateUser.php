@@ -15,5 +15,9 @@ class CreateUser extends CreateRecord
         $roles = $state['roles'] ?? [];
         $roleIds = array_filter(array_map('intval', (array) $roles));
         $this->record->syncRoles($roleIds);
+
+        $permissions = $state['permissions'] ?? [];
+        $permissionIds = array_filter(array_map('intval', (array) $permissions));
+        $this->record->syncPermissions($permissionIds);
     }
 }

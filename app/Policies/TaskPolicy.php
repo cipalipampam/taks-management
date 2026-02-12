@@ -97,7 +97,12 @@ class TaskPolicy
     protected function isStaffAssignableTask(Task $task): bool
     {
         return $task->assignees()
-            ->whereHas('roles', fn ($query) => $query->whereIn('name', ['staff', 'supervisor']))
+            ->where(function ($query): void {
+                $query
+                    ->whereHas('roles', fn ($q) => $q->whereIn('name', ['staff', 'supervisor']))
+                    ->orWhereHas('permissions', fn ($q) => $q->where('name', 'tasks.update-status'))
+                    ->orWhereHas('roles.permissions', fn ($q) => $q->where('name', 'tasks.update-status'));
+            })
             ->exists();
     }
 }

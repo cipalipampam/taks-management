@@ -51,14 +51,24 @@ new class extends Component {
             ->where('created_by', Auth::id())
             ->whereHas(
                 'assignees',
-                fn (Builder $builder) => $builder->whereHas('roles', fn ($q) => $q->whereIn('name', ['staff', 'supervisor']))
+                fn (Builder $builder) => $builder->where(function (Builder $query): void {
+                    $query
+                        ->whereHas('roles', fn ($q) => $q->whereIn('name', ['staff', 'supervisor']))
+                        ->orWhereHas('permissions', fn ($q) => $q->where('name', 'tasks.update-status'))
+                        ->orWhereHas('roles.permissions', fn ($q) => $q->where('name', 'tasks.update-status'));
+                })
             );
     }
 
     public function getStaffUsersProperty(): \Illuminate\Support\Collection
     {
         return User::query()
-            ->whereHas('roles', fn ($q) => $q->whereIn('name', ['staff', 'supervisor']))
+            ->where(function (Builder $query): void {
+                $query
+                    ->whereHas('roles', fn ($q) => $q->whereIn('name', ['staff', 'supervisor']))
+                    ->orWhereHas('permissions', fn ($q) => $q->where('name', 'tasks.update-status'))
+                    ->orWhereHas('roles.permissions', fn ($q) => $q->where('name', 'tasks.update-status'));
+            })
             ->orderBy('name')
             ->get(['id', 'name']);
     }

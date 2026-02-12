@@ -26,6 +26,12 @@ class UsersTable
                 TextColumn::make('roles')
                     ->label('Roles')
                     ->formatStateUsing(fn ($record) => $record->roles->pluck('name')->unique()->values()->implode(', ')),
+                // ->formatStateUsing(function ($state) {
+                //     // dd($state);
+                //     $roles = explode(',', $state);
+                //     $uniqueRoles = array_unique($roles);
+                //     return implode(', ', $uniqueRoles);
+                // }),
 
                 TextColumn::make('email_verified_at')
                     ->dateTime()
