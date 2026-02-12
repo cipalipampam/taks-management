@@ -4,55 +4,64 @@ namespace App\Policies;
 
 use App\Models\Task;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class TaskPolicy
 {
     /**
      * Determine whether the user can view any models.
-     * Only admins can list all tasks.
      */
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->can('tasks.manage') || $user->can('tasks.manage.staff');
     }
 
     /**
      * Determine whether the user can view the model.
-     * Admins can view any task. Users can only view tasks assigned to them or created by them.
      */
     public function view(User $user, Task $task): bool
     {
-        return $user->isAdmin() || 
-               $user->id === $task->assigned_to || 
-               $user->id === $task->created_by;
+        if ($user->can('tasks.manage')) {
+            return true;
+        }
+
+        if ($task->created_by === $user->id) {
+            return true;
+        }
+
+        if ($this->isAssignee($user, $task)) {
+            return true;
+        }
+
+        return $user->can('tasks.manage.staff') && $this->isStaffAssignableTask($task);
     }
 
     /**
      * Determine whether the user can create models.
-     * Only admins can create tasks.
      */
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->can('tasks.manage') || $user->can('tasks.manage.staff');
     }
 
     /**
      * Determine whether the user can update the model.
-     * Only admins can update tasks (full edit).
-z     */
+     */
     public function update(User $user, Task $task): bool
     {
-        return $user->isAdmin();
+        return $user->can('tasks.manage') ||
+            ($user->can('tasks.manage.staff') && $this->isStaffAssignableTask($task));
     }
 
     /**
      * Determine whether the user can update the task status.
-     * Admins can update any task status. Users can only update status of tasks assigned to them.
      */
     public function updateStatus(User $user, Task $task): bool
     {
-        return $user->isAdmin() || $user->id === $task->assigned_to;
+        if ($user->can('tasks.manage')) {
+            return true;
+        }
+
+        return $user->can('tasks.update-status') && $this->isAssignee($user, $task);
     }
 
     /**
@@ -60,7 +69,8 @@ z     */
      */
     public function delete(User $user, Task $task): bool
     {
-        return $user->isAdmin();
+        return $user->can('tasks.manage') ||
+            ($user->can('tasks.manage.staff') && $this->isStaffAssignableTask($task));
     }
 
     /**
@@ -68,7 +78,7 @@ z     */
      */
     public function restore(User $user, Task $task): bool
     {
-        return $user->isAdmin();
+        return $user->can('tasks.manage');
     }
 
     /**
@@ -76,6 +86,18 @@ z     */
      */
     public function forceDelete(User $user, Task $task): bool
     {
-        return $user->isAdmin();
+        return $user->can('tasks.manage');
+    }
+
+    protected function isAssignee(User $user, Task $task): bool
+    {
+        return $task->assignees()->whereKey($user->id)->exists();
+    }
+
+    protected function isStaffAssignableTask(Task $task): bool
+    {
+        return $task->assignees()
+            ->whereHas('roles', fn ($query) => $query->whereIn('name', ['staff', 'supervisor']))
+            ->exists();
     }
 }

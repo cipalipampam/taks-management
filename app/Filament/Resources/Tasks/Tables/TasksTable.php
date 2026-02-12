@@ -6,7 +6,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
@@ -51,7 +50,7 @@ class TasksTable
                     ]),
 
                 SelectFilter::make('assignees')
-                    ->relationship('assignees', 'name', fn ($query) => $query->role('staff'))
+                    ->relationship('assignees', 'name', fn ($query) => $query->whereHas('roles', fn ($q) => $q->whereIn('name', ['staff', 'supervisor'])))
                     ->label('Assigned To'),
             ])
             ->recordActions([

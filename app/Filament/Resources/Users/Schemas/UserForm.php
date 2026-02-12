@@ -34,11 +34,13 @@ class UserForm
                     ->placeholder('Password'),
 
                 Select::make('roles')
-                    ->relationship('roles', 'name')
+                    ->relationship('roles', 'name', fn ($query) => $query->where('name', '!=', 'admin'))
+                    ->multiple()
                     ->preload()
                     ->searchable()
-                    ->required()
-                    ->label('Role'),
+                    ->label('Roles (staff & supervisor)')
+                    ->helperText('User dapat memiliki lebih dari satu role (misal staff sekaligus supervisor).')
+                    ->dehydrated(true),
             ]);
     }
 }

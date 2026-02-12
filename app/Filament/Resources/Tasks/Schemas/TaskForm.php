@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Tasks\Schemas;
 
-use App\Models\User;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -37,7 +36,7 @@ class TaskForm
                     ->nullable(),
 
                 Select::make('assignees')
-                    ->relationship('assignees', 'name', fn ($query) => $query->role('staff'))
+                    ->relationship('assignees', 'name', fn ($query) => $query->whereHas('roles', fn ($q) => $q->whereIn('name', ['staff', 'supervisor'])))
                     ->multiple()
                     ->preload()
                     ->searchable()

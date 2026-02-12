@@ -6,7 +6,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
@@ -24,9 +23,9 @@ class UsersTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('roles.name')
-                    ->label('Role')
-                    ->listWithLineBreaks(),
+                TextColumn::make('roles')
+                    ->label('Roles')
+                    ->formatStateUsing(fn ($record) => $record->roles->pluck('name')->unique()->values()->implode(', ')),
 
                 TextColumn::make('email_verified_at')
                     ->dateTime()

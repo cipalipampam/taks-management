@@ -23,7 +23,7 @@ class TaskResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'title';
-    
+
     public static function canViewAny(): bool
     {
         $user = auth()->user();
@@ -70,7 +70,7 @@ class TaskResource extends Resource
         }
 
         if ($user->can('tasks.manage.staff')) {
-            return $query->whereHas('assignees', fn (Builder $builder) => $builder->role('staff'));
+            return $query->whereHas('assignees', fn (Builder $builder) => $builder->whereHas('roles', fn ($q) => $q->whereIn('name', ['staff', 'supervisor'])));
         }
 
         return $query->whereRaw('1 = 0');

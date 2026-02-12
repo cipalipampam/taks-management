@@ -15,10 +15,10 @@ class EnsureUserIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->hasAnyRole(['admin', 'supervisor'])) {
+        if (auth()->check() && auth()->user()->hasRole('admin')) {
             return $next($request);
         }
 
-        abort(403, 'Unauthorized access. Only administrators or supervisors can access this panel.');
+        abort(403, 'Unauthorized access. Only administrators can access this panel.');
     }
 }

@@ -10,7 +10,8 @@ class Dashboard extends BaseDashboard
     public function getWidgets(): array
     {
         return [
-            \App\Filament\Widgets\AdminNotificationsWidget::class,
+            // Notifications disabled for now
+            // \App\Filament\Widgets\AdminNotificationsWidget::class,
             StatsOverview::class,
         ];
     }
