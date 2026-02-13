@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Cache\DashboardCacheService;
 use Livewire\Volt\Component;
 
 new class extends Component {
@@ -18,12 +19,7 @@ new class extends Component {
             return;
         }
 
-        $tasks = $user->assignedTasks()->get();
-        $this->stats = [
-            ['label' => 'Not Started', 'value' => $tasks->where('status', 'todo')->count(), 'desc' => 'Tasks waiting to be started', 'status' => 'todo'],
-            ['label' => 'In Progress', 'value' => $tasks->where('status', 'doing')->count(), 'desc' => 'Tasks currently in progress', 'status' => 'doing'],
-            ['label' => 'Completed', 'value' => $tasks->where('status', 'done')->count(), 'desc' => 'Finished tasks', 'status' => 'done'],
-        ];
+        $this->stats = DashboardCacheService::getUserStats($user->id);
     }
 }; ?>
 

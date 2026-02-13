@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Tasks\Pages;
 use App\Filament\Resources\Tasks\TaskResource;
 use App\Models\User;
 use App\Notifications\TaskAssignedNotification;
+use App\Services\Cache\TaskCacheService;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Log;
@@ -33,6 +34,10 @@ class EditTask extends EditRecord
     {
         $currentAssigneeIds = $this->record->assignees()->pluck('users.id')->all();
         $previousAssigneeIds = $this->originalAssigneeIds;
+
+        TaskCacheService::forgetUserFacingTaskCaches(
+            array_unique(array_merge($currentAssigneeIds, $previousAssigneeIds))
+        );
 
         sort($currentAssigneeIds);
         sort($previousAssigneeIds);

@@ -1,8 +1,9 @@
 <?php
 
 use App\Models\Task;
-use Livewire\Volt\Component;
+use App\Services\Cache\TaskCacheService;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Volt\Component;
 
 new class extends Component {
     public $tasks = [];
@@ -21,7 +22,7 @@ new class extends Component {
             return;
         }
 
-        $this->tasks = $user->assignedTasks()->with('creator')->latest()->get();
+        $this->tasks = TaskCacheService::getUserTasksList($user->id);
     }
 
     public function updateTaskStatus(int $taskId, string $status): void

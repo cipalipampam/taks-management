@@ -2,6 +2,7 @@
 
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Cache\TaskCacheService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
@@ -42,7 +43,7 @@ new class extends Component {
         if (! $this->canAccess()) {
             return;
         }
-        $this->tasks = $this->tasksQuery()->with(['creator', 'assignees'])->latest()->get()->toArray();
+        $this->tasks = TaskCacheService::getSupervisorTasksList(Auth::id());
     }
 
     protected function tasksQuery(): Builder
@@ -122,6 +123,7 @@ new class extends Component {
             'created_by' => Auth::id(),
         ]);
         $task->assignees()->sync($assigneeIds);
+        TaskCacheService::forgetUserFacingTaskCaches($assigneeIds);
 
         $this->showCreateModal = false;
         $this->resetForm();
@@ -153,6 +155,7 @@ new class extends Component {
             ->unique()
             ->values()
             ->all();
+        $previousAssigneeIds = $task->assignees()->pluck('users.id')->all();
         $task->update([
             'title' => $this->title,
             'description' => $this->description,
@@ -160,6 +163,9 @@ new class extends Component {
             'deadline' => $this->deadline ? \Carbon\Carbon::parse($this->deadline) : null,
         ]);
         $task->assignees()->sync($assigneeIds);
+        TaskCacheService::forgetUserFacingTaskCaches(
+            array_unique(array_merge($previousAssigneeIds, $assigneeIds))
+        );
 
         $this->showEditModal = false;
         $this->editingTaskId = null;

@@ -9,6 +9,7 @@ use App\Filament\Resources\Tasks\RelationManagers\ActivityLogsRelationManager;
 use App\Filament\Resources\Tasks\Schemas\TaskForm;
 use App\Filament\Resources\Tasks\Tables\TasksTable;
 use App\Models\Task;
+use App\Services\Cache\TaskCacheService;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -65,12 +66,25 @@ class TaskResource extends Resource
             return $query->whereRaw('1 = 0');
         }
 
+        // If request contains simple filters, use cached search results (tagged for invalidation)
+        $filters = array_filter(request()->only(['status', 'assignee_id', 'q']));
+        if (! empty($filters)) {
+            $taskIds = TaskCacheService::getFilteredTaskIds($query, $filters, $user->id);
+
+            return $query->whereIn('id', $taskIds);
+        }
+
+        // Cache only for users with 'tasks.manage' permission (admin/manager)
         if ($user->can('tasks.manage')) {
-            return $query;
+            $taskIds = TaskCacheService::getAdminTaskListAll($query);
+
+            return $query->whereIn('id', $taskIds);
         }
 
         if ($user->can('tasks.manage.staff')) {
-            return $query->whereHas('assignees', fn (Builder $builder) => $builder->whereHas('roles', fn ($q) => $q->whereIn('name', ['staff', 'supervisor'])));
+            $taskIds = TaskCacheService::getAdminTaskListStaffSupervisor($query);
+
+            return $query->whereIn('id', $taskIds);
         }
 
         return $query->whereRaw('1 = 0');
