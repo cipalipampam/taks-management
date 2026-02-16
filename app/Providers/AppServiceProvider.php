@@ -3,12 +3,15 @@
 namespace App\Providers;
 
 use App\Models\Task;
+use App\Models\User;
 use App\Observers\TaskObserver;
+use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -36,7 +39,8 @@ class AppServiceProvider extends ServiceProvider
 
     protected function registerPolicies(): void
     {
-        \Illuminate\Support\Facades\Gate::policy(\App\Models\Task::class, \App\Policies\TaskPolicy::class);
+        Gate::policy(Task::class, \App\Policies\TaskPolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
     }
 
     protected function configureDefaults(): void

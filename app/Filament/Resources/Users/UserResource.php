@@ -14,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Gate;
 use UnitEnum;
 
 class UserResource extends Resource
@@ -28,22 +29,22 @@ class UserResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->can('users.manage') ?? false;
+        return Gate::check('viewAny', User::class);
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->can('users.manage') ?? false;
+        return Gate::check('create', User::class);
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()?->can('users.manage') ?? false;
+        return Gate::check('update', $record);
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->can('users.manage') ?? false;
+        return Gate::check('delete', $record);
     }
 
     public static function form(Schema $schema): Schema

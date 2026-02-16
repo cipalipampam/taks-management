@@ -4,6 +4,8 @@ namespace Tests\Feature\Filament;
 
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
+use App\Filament\Resources\Users\Pages\ListUsers;
+use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -14,6 +16,36 @@ use Tests\TestCase;
 class UserDirectPermissionsTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_user_with_direct_permission_users_manage_can_access_user_crud_without_admin_role(): void
+    {
+        Permission::create(['name' => 'users.manage']);
+        $staffRole = Role::create(['name' => 'staff']);
+
+        $userWithPermissionOnly = User::factory()->create();
+        $userWithPermissionOnly->syncRoles([$staffRole->id]);
+        $userWithPermissionOnly->givePermissionTo('users.manage');
+
+        $this->actingAs($userWithPermissionOnly);
+
+        $this->assertTrue(UserResource::canViewAny());
+        $this->assertTrue(UserResource::canCreate());
+
+        Livewire::test(ListUsers::class)
+            ->assertSuccessful();
+    }
+
+    public function test_user_without_users_manage_permission_cannot_access_user_resource(): void
+    {
+        Role::create(['name' => 'staff']);
+        $staff = User::factory()->create();
+        $staff->assignRole('staff');
+
+        $this->actingAs($staff);
+
+        $this->assertFalse(UserResource::canViewAny());
+        $this->assertFalse(UserResource::canCreate());
+    }
 
     public function test_admin_can_create_user_with_additional_direct_permissions(): void
     {
