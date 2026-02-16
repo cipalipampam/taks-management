@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Services\Cache\DashboardCacheService;

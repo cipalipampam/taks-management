@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Api\Tasks;
 
+use App\Http\Api\Tasks\Requests\StoreTaskRequest;
+use App\Http\Api\Tasks\Requests\UpdateTaskRequest;
+use App\Http\Api\Tasks\Requests\UpdateTaskStatusRequest;
+use App\Http\Api\Tasks\Resources\TaskResource;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\StoreTaskRequest;
-use App\Http\Requests\Api\UpdateTaskRequest;
-use App\Http\Resources\TaskResource;
 use App\Models\Task;
+use App\Services\Cache\TaskCacheService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -14,6 +16,41 @@ use Illuminate\Support\Facades\Gate;
 
 class TaskController extends Controller
 {
+    /**
+     * List tasks assigned to the current user (staff - My Tasks).
+     */
+    public function myTasks(Request $request): AnonymousResourceCollection
+    {
+        $tasks = TaskCacheService::getUserTasksList($request->user()->id);
+
+        return TaskResource::collection($tasks);
+    }
+
+    /**
+     * List tasks created by the current supervisor (Manage Staff Tasks).
+     */
+    public function supervisorTasks(Request $request): JsonResponse
+    {
+        if (! $request->user()->can('tasks.manage.staff')) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $tasks = TaskCacheService::getSupervisorTasksList($request->user()->id);
+
+        return response()->json(['data' => $tasks]);
+    }
+
+    /**
+     * Update task status (for assignees with tasks.update-status).
+     */
+    public function updateStatus(UpdateTaskStatusRequest $request, Task $task): TaskResource
+    {
+        $task->update(['status' => $request->validated('status')]);
+        $task->load(['creator', 'assignees']);
+
+        return new TaskResource($task);
+    }
+
     /**
      * List tasks visible to the authenticated user.
      */
