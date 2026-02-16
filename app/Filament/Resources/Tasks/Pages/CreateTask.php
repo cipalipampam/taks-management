@@ -3,12 +3,10 @@
 namespace App\Filament\Resources\Tasks\Pages;
 
 use App\Filament\Resources\Tasks\TaskResource;
-use App\Models\User;
-use App\Notifications\TaskAssignedNotification;
 use App\Services\Cache\TaskCacheService;
+use App\Services\Notification\TaskNotificationService;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
 
 class CreateTask extends CreateRecord
 {
@@ -27,14 +25,7 @@ class CreateTask extends CreateRecord
 
         TaskCacheService::forgetUserFacingTaskCaches($assigneeIds);
 
-        if ($assigneeIds === []) {
-            return;
-        }
-
-        $users = User::whereKey($assigneeIds)->get();
-        if ($users->isNotEmpty()) {
-            Notification::send($users, new TaskAssignedNotification($this->record, auth()->user()));
-        }
+        TaskNotificationService::taskAssigned($this->record, $assigneeIds, auth()->user());
 
         Log::info('task.assigned', [
             'task_id' => $this->record->id,

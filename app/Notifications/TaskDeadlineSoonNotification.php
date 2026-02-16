@@ -15,8 +15,7 @@ class TaskDeadlineSoonNotification extends Notification implements ShouldQueue
     public function __construct(
         protected Task $task,
         protected int $hours,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {

@@ -108,7 +108,7 @@ new class extends Component {
 
                                 <div class="flex shrink-0 flex-wrap items-center gap-2 sm:flex-col sm:items-end">
                                     @if($task->status === 'todo')
-                                        <flux:badge color="zinc">{{ __('Todo') }}</flux:badge>
+                                        <flux:badge color="zinc">Todo</flux:badge>
                                         @if($this->canUpdateStatus())
                                             <flux:button
                                                 size="sm"
@@ -120,7 +120,7 @@ new class extends Component {
                                             </flux:button>
                                         @endif
                                     @elseif($task->status === 'doing')
-                                        <flux:badge color="amber">{{ __('Doing') }}</flux:badge>
+                                        <flux:badge color="amber">Doing</flux:badge>
                                         @if($this->canUpdateStatus())
                                             <flux:button
                                                 size="sm"
@@ -132,7 +132,7 @@ new class extends Component {
                                             </flux:button>
                                         @endif
                                     @else
-                                        <flux:badge color="green">{{ __('Done') }}</flux:badge>
+                                        <flux:badge color="green">Done</flux:badge>
                                         @if($this->canUpdateStatus())
                                             <flux:button
                                                 size="sm"

@@ -3,13 +3,11 @@
 namespace App\Filament\Resources\Tasks\Pages;
 
 use App\Filament\Resources\Tasks\TaskResource;
-use App\Models\User;
-use App\Notifications\TaskAssignedNotification;
 use App\Services\Cache\TaskCacheService;
+use App\Services\Notification\TaskNotificationService;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
 
 class EditTask extends EditRecord
 {
@@ -47,12 +45,7 @@ class EditTask extends EditRecord
         }
 
         $addedAssigneeIds = array_values(array_diff($currentAssigneeIds, $previousAssigneeIds));
-        if ($addedAssigneeIds !== []) {
-            $users = User::whereKey($addedAssigneeIds)->get();
-            if ($users->isNotEmpty()) {
-                Notification::send($users, new TaskAssignedNotification($this->record, auth()->user()));
-            }
-        }
+        TaskNotificationService::taskAssigned($this->record, $addedAssigneeIds, auth()->user());
 
         Log::info('task.assigned', [
             'task_id' => $this->record->id,

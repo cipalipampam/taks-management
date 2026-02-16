@@ -16,8 +16,7 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
     public function __construct(
         protected Task $task,
         protected ?User $actor = null,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {

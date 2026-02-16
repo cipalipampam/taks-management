@@ -2,10 +2,9 @@
 
 namespace App\Livewire;
 
-use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\Auth;
 
 class UserNotifications extends Component
 {
@@ -28,17 +27,7 @@ class UserNotifications extends Component
     public function render()
     {
         $user = Auth::user();
-        // Jika user staff, kosongkan notifikasi
-
-        if ($user->hasRole('staff')) {
-            // Buat paginator kosong secara manual
-            $notifications = new \Illuminate\Pagination\LengthAwarePaginator([], 0, $this->perPage, 1, [
-                'path' => request()->url(),
-                'query' => request()->query(),
-            ]);
-        } else {
-            $notifications = $user->notifications()->latest()->paginate($this->perPage);
-        }
+        $notifications = $user->notifications()->latest()->paginate($this->perPage);
 
         return view('livewire.user-notifications', [
             'notifications' => $notifications,

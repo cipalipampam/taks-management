@@ -15,11 +15,9 @@
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
-                    {{--
                     <flux:sidebar.item icon="bell" :href="route('notifications')" :current="request()->routeIs('notifications')" wire:navigate>
-                        Notifikasi
+                        {{ __('Notifications') }}
                     </flux:sidebar.item>
-                    --}}
                     <flux:sidebar.item icon="clipboard-document-list" :href="route('your-tasks')" :current="request()->routeIs('your-tasks')" wire:navigate>
                         {{ __('My Tasks') }}
                     </flux:sidebar.item>

@@ -9,7 +9,7 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    // Route::view('/notifications', 'pages.notifications')->name('notifications');
+    Route::view('/notifications', 'pages.notifications')->name('notifications');
     Route::view('/your-tasks', 'pages.your-tasks')->name('your-tasks');
 
     Route::middleware('can:tasks.manage.staff')->group(function () {

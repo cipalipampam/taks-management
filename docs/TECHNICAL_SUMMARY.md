@@ -128,21 +128,76 @@
 - Tambahkan test untuk workflow penting.
 
 ---
+## Cache Technical Summary
 
-## Dependency Kunci
-- filament/filament
-- laravel/fortify
-- livewire/livewire
-- livewire/flux
-- spatie/laravel-permission
-- laravel/tinker
-- laravel/boost (dev)
+### 1. Overview
 
-## Testing
-- PHPUnit terpasang.
-- Belum terlihat test spesifik policy atau resource, bisa ditambahkan untuk skenario akses role.
+Project ini menggunakan cache untuk mengoptimalkan performa pada halaman yang sering diakses, seperti dashboard, daftar tugas, dan statistik. Cache diimplementasikan secara modular melalui service di folder `app/Services/Cache`.
 
-## Saran Peningkatan
-- Tambahkan test policy untuk `TaskPolicy` dan visibilitas query di `TaskResource`.
-- Tambahkan audit event untuk perubahan status task (opsional).
-- Dokumentasikan alur assignment task untuk supervisor dan staff di README.
+### 2. Struktur Cache Service
+
+#### a. TaskCacheService
+
+- **getUserTasksList($userId):**  
+  Meng-cache daftar tugas user dengan key: `user_tasks_list_{userId}`. TTL: 60 detik.
+- **getSupervisorTasksList($supervisorId):**  
+  Meng-cache daftar tugas supervisor dengan key: `supervisor_tasks_list_{supervisorId}`. TTL: 60 detik.
+- **getFilteredTaskIds($query, $filters, $userId):**  
+  Meng-cache hasil pencarian/filter tugas dengan key hash dari filter. TTL: 60 detik.
+- **getAdminTaskListAll($query):**  
+  Meng-cache seluruh ID tugas admin dengan key: `admin_task_list_all`. TTL: 60 detik.
+- **getAdminTaskListStaffSupervisor($query):**  
+  Meng-cache seluruh ID tugas supervisor/staff dengan key: `admin_task_list_staff_supervisor`. TTL: 60 detik.
+- **forgetUserFacingTaskCaches($userIds):**  
+  Menghapus cache terkait user (list tugas, statistik).
+- **flushTaskSearchCache():**  
+  Menghapus cache pencarian tugas (menggunakan tag `task_search` jika driver mendukung).
+- **forgetForTask($task, $assigneeIds):**  
+  Menghapus cache yang berkaitan dengan tugas tertentu dan assignee-nya.
+
+#### b. DashboardCacheService
+
+- **getAdminStats():**  
+  Meng-cache statistik dashboard admin dengan key: `dashboard.stats`. TTL: 300 detik.
+- **getUserStats($userId):**  
+  Meng-cache statistik dashboard user dengan key: `user_dashboard_stats_{userId}`. TTL: 60 detik.
+- **forgetAdminStats():**  
+  Menghapus cache statistik admin.
+- **forgetUserStats($userIds):**  
+  Menghapus cache statistik user.
+
+### 3. Penggunaan Cache
+
+- **Dashboard User:**  
+  Menggunakan cache untuk statistik dan daftar tugas user.
+- **Supervisor Task Manager:**  
+  Menggunakan cache untuk daftar tugas supervisor.
+- **Filament Admin Panel:**  
+  Menggunakan cache untuk statistik dan daftar tugas/filter admin.
+- **Invalidasi Cache:**  
+  Cache dihapus otomatis pada perubahan data (create, update, delete) melalui observer dan service.
+
+### 4. Cache Key & TTL
+
+- **Key:**  
+  Konsisten dan mudah diprediksi, tidak mengandung data sensitif.
+- **TTL:**  
+  Umumnya 60 detik untuk user-facing, 300 detik untuk admin stats.
+
+### 5. Cache Driver
+
+- **Default:** Redis (lihat `config/cache.php`)
+- **Fallback:** Database/file jika Redis tidak tersedia.
+- **Tagging:** Digunakan untuk pencarian jika driver mendukung.
+
+### 6. Best Practice & Saran
+
+- Dokumentasi cache key dan TTL disarankan untuk dipelihara.
+- Pastikan cache tagging hanya digunakan pada driver yang mendukung.
+- Invalidasi cache sudah terintegrasi dengan baik pada event penting.
+- Cache hanya digunakan untuk agregasi/statistik dan list, bukan data sensitif.
+
+---
+
+**Kesimpulan:**  
+Cache di project ini sudah modular, aman, dan efektif untuk mengurangi query berat pada halaman utama. Struktur service memudahkan pengembangan dan invalidasi cache sudah terintegrasi dengan baik.

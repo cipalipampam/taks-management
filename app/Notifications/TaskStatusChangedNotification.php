@@ -2,14 +2,17 @@
 
 namespace App\Notifications;
 
+use App\Filament\Resources\Tasks\TaskResource;
 use App\Models\Task;
 use App\Models\User;
+use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Notification as BaseNotification;
 
-class TaskStatusChangedNotification extends Notification implements ShouldQueue
+class TaskStatusChangedNotification extends BaseNotification implements ShouldQueue
 {
     use Queueable;
 
@@ -18,8 +21,7 @@ class TaskStatusChangedNotification extends Notification implements ShouldQueue
         protected string $oldStatus,
         protected string $newStatus,
         protected ?User $actor = null,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -53,5 +55,25 @@ class TaskStatusChangedNotification extends Notification implements ShouldQueue
             'changed_by_id' => $this->actor?->id,
             'changed_by_name' => $this->actor?->name,
         ];
+    }
+
+    public function toDatabase(object $notifiable): array
+    {
+        $body = "From {$this->oldStatus} to {$this->newStatus}";
+        if ($this->actor) {
+            $body .= '. Changed by: '.$this->actor->name;
+        }
+
+        return Notification::make()
+            ->title('Status tugas berubah: '.$this->task->title)
+            ->body($body)
+            ->actions([
+                Action::make('view')
+                    ->label(__('View'))
+                    ->button()
+                    ->url(TaskResource::getUrl('edit', ['record' => $this->task]))
+                    ->markAsRead(),
+            ])
+            ->getDatabaseMessage();
     }
 }
