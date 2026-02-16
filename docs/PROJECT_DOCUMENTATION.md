@@ -82,12 +82,28 @@ Aplikasi manajemen tugas berbasis Laravel 12, Livewire, Filament, dan Fortify. M
 
 ---
 
-## 10. Cache
-- Modular service di `app/Services/Cache`
-- TaskCacheService: cache daftar tugas, pencarian, assignment
-- DashboardCacheService: cache statistik dashboard
-- TTL: 60 detik (user-facing), 300 detik (admin stats)
-- Invalidasi cache otomatis via observer/service
+
+## 10. Cache (Detail)
+- Modular service di `app/Services/Cache`:
+	- **TaskCacheService**
+		- getUserTasksList($userId): cache daftar tugas user (key: user_tasks_list_{userId}, TTL: 60 detik)
+		- getSupervisorTasksList($supervisorId): cache tugas supervisor (key: supervisor_tasks_list_{supervisorId}, TTL: 60 detik)
+		- getFilteredTaskIds($query, $filters, $userId): cache hasil filter tugas (key hash, TTL: 60 detik)
+		- getAdminTaskListAll($query): cache seluruh ID tugas admin (key: admin_task_list_all, TTL: 60 detik)
+		- getAdminTaskListStaffSupervisor($query): cache ID tugas supervisor/staff (key: admin_task_list_staff_supervisor, TTL: 60 detik)
+		- forgetUserFacingTaskCaches($userIds): hapus cache terkait user
+		- flushTaskSearchCache(): hapus cache pencarian tugas (tag task_search jika driver mendukung)
+		- forgetForTask($task, $assigneeIds): hapus cache terkait tugas tertentu
+	- **DashboardCacheService**
+		- getAdminStats(): cache statistik dashboard admin (key: dashboard.stats, TTL: 300 detik)
+		- getUserStats($userId): cache statistik dashboard user (key: user_dashboard_stats_{userId}, TTL: 60 detik)
+		- forgetAdminStats(): hapus cache statistik admin
+		- forgetUserStats($userIds): hapus cache statistik user
+- Penggunaan cache untuk dashboard, supervisor, admin panel, invalidasi otomatis via observer/service.
+- Key konsisten, TTL 60 detik (user), 300 detik (admin stats), driver default Redis.
+- Tagging cache hanya jika driver mendukung.
+- Dokumentasi cache key & TTL disarankan dipelihara.
+- Cache hanya untuk agregasi/statistik/list, bukan data sensitif.
 
 ---
 

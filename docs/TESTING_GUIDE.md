@@ -1,83 +1,44 @@
-# Task Management System - Laravel + Filament + Livewire
-
-## 🎯 Project Overview
-A complete task management application dengan admin panel dan user dashboard.
-
-**Version**: v1 (Basic but proper implementation)
-
----
+# Task Management System - Testing Guide
 
 ## 🚀 Quick Start
 
-### 1. **Setup Database**
+### 1. Setup Database & Jalankan Server
 ```bash
-# Database sudah di-seed dengan data dummy
-# Admin user: admin@example.com / password
-# Regular user: user@example.com / password
-```
-
-### 2. **Start Development Server**
-```bash
+composer install
+npm install
+php artisan migrate --seed
 php artisan serve
-# Server akan run di http://127.0.0.1:8000
+# Admin: admin@example.com / password
+# User: user@example.com / password
 ```
 
 ---
 
-## 👥 User Roles & Access
+## 🧪 Testing Checklist
 
-### **Admin User** (`admin@example.com`)
-- ✅ Access ke `/admin` panel
-- ✅ Full CRUD Task di Filament
-- ✅ View, edit, delete semua tasks
-- ✅ Assign tasks ke user manapun
-- ✅ Filter & search tasks
+### Admin Testing
+- [ ] Login sebagai admin
+- [ ] CRUD Task di panel admin
+- [ ] Filter, search, dan assign task
+- [ ] Edit dan hapus task
 
-### **Regular User** (`user@example.com`)
-- ✅ Access ke `/dashboard` 
-- ✅ View tasks yang assigned ke mereka
-- ✅ View tasks yang mereka buat
-- ✅ Quick status update (Livewire)
-- ✅ Tidak bisa access `/admin` (401 Forbidden)
+### Regular User Testing
+- [ ] Login sebagai user
+- [ ] Lihat dashboard, assigned tasks, created tasks
+- [ ] Quick status update
 
----
+### Authorization Testing
+- [ ] User tidak bisa akses /admin
+- [ ] Admin bisa delete task
 
-## 📋 Database Schema
-
-### **Users Table**
-```sql
-- id (PK)
-- name
-- email (unique)
-- password
-- role (admin|user) -- NEW
-- email_verified_at
-- two_factor_secret
-- created_at, updated_at
-```
-
-### **Tasks Table**
-```sql
-- id (PK)
-- title
-- description
-- status (todo|doing|done)
-- deadline (nullable)
-- created_by (FK → users)
-- assigned_to (FK → users, nullable)
-- created_at, updated_at
-- Indexes: status, deadline, created_by, assigned_to
-```
+### Database Testing
+- [ ] Cek relasi user-task
+- [ ] Cek seeding data awal
 
 ---
 
-## 🎨 Features
-
-### **1. Admin Panel (Filament)**
-**URL**: `http://127.0.0.1:8000/admin`
-
-#### CRUD Operations
-- **Create Task**: Tombol "+ New" di toolbar
+## 📚 Dokumentasi Lengkap
+Lihat file `PROJECT_DOCUMENTATION.md` untuk arsitektur, fitur, workflow, dan referensi file.
   - Title (required)
   - Description (RichEditor)
   - Status dropdown (Todo/Doing/Done)
